@@ -1,6 +1,8 @@
 import os, sys
 import numpy as np
 import pandas as pd
+import pyedflib
+import mne
 
 def get_versions_TSSB(path_to_desc="datasets/TSSB/"):
     """
@@ -89,3 +91,13 @@ def get_Rutgers(DRConfig):
         # Y_len = dataset_properties[:,0] # length of every sample
         
     return X, X_mask, Y
+
+def get_UTime(DRConfig):
+    versions = os.listdir("datasets/U-Time/")
+    versions.sort()
+    version = os.listdir("datasets/U-Time/" + versions[0])
+    version.sort()
+    
+    PSG_file = pyedflib.EdfReader("datasets/U-Time/" + versions[0] +"/"+ version[0]).readAnnotations()
+    H_file = pyedflib.EdfReader("datasets/U-Time/" + versions[0] +"/"+ version[1]).readAnnotations()
+    

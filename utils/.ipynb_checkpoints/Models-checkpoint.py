@@ -1,5 +1,6 @@
 import importlib
 import utils
+import os
 
 import pandas as pd
 import numpy as np
@@ -9,6 +10,7 @@ import sklearn
 import pytorch_lightning as pl
 
 from torch.nn import Linear, CrossEntropyLoss, BCEWithLogitsLoss
+import torch.nn as nn
 from torch_geometric.loader import DataLoader
 from torch_geometric.nn import global_mean_pool, global_add_pool, global_max_pool, ChebConv, global_sort_pool
 from torch.nn import Sequential, BatchNorm1d, ReLU, Dropout
@@ -25,7 +27,6 @@ from pytorch_lightning.callbacks import ProgressBarBase
 from pytorch_lightning.loggers import TensorBoardLogger
 #from pytorch_lightning.loggers import CSVLogger
 from dvclive.lightning import DVCLiveLogger
-
 
 
 class GINE(pl.LightningModule):
@@ -238,40 +239,40 @@ class NetBCE(pl.LightningModule):
         print(classification_report(true_array, pred_array))
         print("pred_array ",pred_array)
         
-class NetCE(pl.LightningModule):
-    def __init__(self):
-        super(NetCE, self).__init__()
+# class NetCE(pl.LightningModule):
+#     def __init__(self):
+#         super(NetCE, self).__init__()
      
-        self.conv1 = GATConv(1, 32, heads=4)
-        self.lin1 = torch.nn.Linear(1, 4 * 32)
-        self.conv2 = GATConv(4 * 32, 32, heads=4)
-        self.lin2 = torch.nn.Linear(4 * 32, 4 * 32)
-        self.conv3 = GATConv(4 * 32, 32, heads=8)
-        self.lin3 = torch.nn.Linear(4 * 32, 8 * 32)
-        self.conv4 = GATConv(8 * 32, 32, heads=16)
-        self.lin4 = torch.nn.Linear(8 * 32, 16 * 32)
-        self.conv5 = GATConv(16 * 32, 32, heads=32)
-        self.lin5 = torch.nn.Linear(16 * 32, 32 * 32)
-        self.conv6 = GATConv(32 * 32, 32, heads=64)
-        self.lin6 = torch.nn.Linear(32 * 32, 64 * 32)
-        self.conv7 = GATConv(64 * 32, 32, heads=16)
-        self.lin7 = torch.nn.Linear(64 * 32, 16 * 32)
-        self.conv8 = GATConv(16 * 32, len(class_weights), heads=6,concat=False)
-        self.lin8 = torch.nn.Linear(16 * 32, len(class_weights))
+# #         self.conv1 = GATConv(1, 32, heads=4)
+# #         self.lin1 = torch.nn.Linear(1, 4 * 32)
+# #         self.conv2 = GATConv(4 * 32, 32, heads=4)
+# #         self.lin2 = torch.nn.Linear(4 * 32, 4 * 32)
+# #         self.conv3 = GATConv(4 * 32, 32, heads=8)
+# #         self.lin3 = torch.nn.Linear(4 * 32, 8 * 32)
+# #         self.conv4 = GATConv(8 * 32, 32, heads=16)
+# #         self.lin4 = torch.nn.Linear(8 * 32, 16 * 32)
+# #         self.conv5 = GATConv(16 * 32, 32, heads=32)
+# #         self.lin5 = torch.nn.Linear(16 * 32, 32 * 32)
+# #         self.conv6 = GATConv(32 * 32, 32, heads=64)
+# #         self.lin6 = torch.nn.Linear(32 * 32, 64 * 32)
+# #         self.conv7 = GATConv(64 * 32, 32, heads=16)
+# #         self.lin7 = torch.nn.Linear(64 * 32, 16 * 32)
+# #         self.conv8 = GATConv(16 * 32, len(class_weights), heads=6,concat=False)
+# #         self.lin8 = torch.nn.Linear(16 * 32, len(class_weights))
 
-    def forward(self, data):
-        x, edge_index, edge_weight = data.x, data.edge_index, data.edge_attr
+# #     def forward(self, data):
+# #         x, edge_index, edge_weight = data.x, data.edge_index, data.edge_attr
         
         
-        x = F.elu(self.conv1(x, edge_index, edge_weight) + self.lin1(x))
-        x = F.elu(self.conv2(x, edge_index, edge_weight) + self.lin2(x))
-        x = F.elu(self.conv3(x, edge_index, edge_weight) + self.lin3(x))
-        x = F.elu(self.conv4(x, edge_index, edge_weight) + self.lin4(x))
-        x = F.elu(self.conv5(x, edge_index, edge_weight) + self.lin5(x))
-        x = F.elu(self.conv6(x, edge_index, edge_weight) + self.lin6(x))
-        x = F.elu(self.conv7(x, edge_index, edge_weight) + self.lin7(x))
-        x = self.conv8(x, edge_index, edge_weight) + self.lin8(x)
-        return x
+# #         x = F.elu(self.conv1(x, edge_index, edge_weight) + self.lin1(x))
+# #         x = F.elu(self.conv2(x, edge_index, edge_weight) + self.lin2(x))
+# #         x = F.elu(self.conv3(x, edge_index, edge_weight) + self.lin3(x))
+# #         x = F.elu(self.conv4(x, edge_index, edge_weight) + self.lin4(x))
+# #         x = F.elu(self.conv5(x, edge_index, edge_weight) + self.lin5(x))
+# #         x = F.elu(self.conv6(x, edge_index, edge_weight) + self.lin6(x))
+# #         x = F.elu(self.conv7(x, edge_index, edge_weight) + self.lin7(x))
+# #         x = self.conv8(x, edge_index, edge_weight) + self.lin8(x)
+# #         return x
     
 #         self.conv1 = GATConv(1, 32, heads=4)
 #         self.lin1 = torch.nn.Linear(1, 4 * 32)
@@ -291,37 +292,72 @@ class NetCE(pl.LightningModule):
 #         x = F.elu(self.conv3(x, edge_index, edge_weight) + self.lin3(x))
 #         x = self.conv4(x, edge_index, edge_weight) + self.lin4(x)
 #         return x
+
+class NetCE(pl.LightningModule):
+    def __init__(self):
+        super(NetCE, self).__init__()
+        self.conv = nn.ModuleList([GATConv(1, 32, heads=4),
+                                   GATConv(4 * 32, 32, heads=4),
+                                   GATConv(4 * 32, 32, heads=8),
+                                   GATConv(8 * 32, len(class_weights), heads=6,concat=False)])
+        self.lin = nn.Sequential(
+                        torch.nn.Linear(1, 4 * 32),
+                        torch.nn.Linear(4 * 32, 4 * 32),
+                        torch.nn.Linear(4 * 32, 8 * 32),
+                        torch.nn.Linear(8 * 32, len(class_weights))
+                    )
+    
+    def forward(self, data):
+        x, edge_index, edge_weight = data.x.cuda(), data.edge_index.cuda(), data.edge_attr.cuda()
+        x = F.elu(self.conv[0](x, edge_index, edge_weight) + self.lin[0](x))
+        x = F.elu(self.conv[1](x, edge_index, edge_weight) + self.lin[1](x))
+        x = F.elu(self.conv[2](x, edge_index, edge_weight) + self.lin[2](x))
+        x = self.conv[3](x, edge_index, edge_weight) + self.lin[3](x)
+        return x
+    
+    def inference(self, data):
+        with torch.no_grad():
+            return self.forward(data)
     
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(model.parameters(), lr=MConfig["learning_rate"], weight_decay=5e-4)
         return optimizer
     
-    def training_step(self, data, batch_idx): 
+    def training_step(self, data, batch_idx):
         out = model(data)
         loss_function = CrossEntropyLoss(weight=class_weights).to(device)
-        
-        train_loss = loss_function(out, data.y.squeeze().to(torch.int64))
-        
-        correct=out.argmax(dim=1).eq(data.y).sum().item()
-        logs={"train_loss": train_loss}
-        total=len(data.y)
-        batch_dictionary={"loss": train_loss, "log": logs, "correct": correct, "total": total}
+
+        if hasattr(data, 'train_mask'):
+            # If 'train_mask' attribute is present in data, use it for masking
+            y_data = data.y[data.train_mask]
+            out_data = out[data.train_mask]
+        else:
+            y_data = data.y
+            out_data = out
+            
+        train_loss = loss_function(out_data, y_data.squeeze().to(torch.int64))        
         return train_loss
-    
+
     def validation_step(self, data, batch_idx):
-        
         out = model(data)
         loss_function = CrossEntropyLoss(weight=class_weights).to(device) #weight=class_weight
-        val_loss = loss_function(out, data.y.squeeze().to(torch.int64))
         
-        ys, preds = [], []
-        val_label = data.y.cpu()
-        ys.append(data.y)
-        preds.append((out.argmax(-1)).float().cpu())     
+        if hasattr(data, 'val_mask'):
+            # If 'val_mask' attribute is present in data, use it for masking
+            y_data = data.y[data.val_mask]
+            out_data = out[data.val_mask]
+        else:
+            y_data = data.y
+            out_data = out
+
+        val_loss = loss_function(out_data, y_data.squeeze().to(torch.int64))
+        val_label = y_data.cpu()
+        ys = [y_data]
+        preds = [(out_data.argmax(-1)).float().cpu()]
         y, pred = torch.cat(ys, dim=0), torch.cat(preds, dim=0)
-        pred = pred.reshape(-1,1)
+        pred = pred.reshape(-1, 1)
         accuracy = (pred == val_label).sum() / pred.shape[0]
-    
+
         self.log("val_loss", val_loss)
         self.log("val_acc", accuracy)
     
@@ -329,31 +365,58 @@ class NetCE(pl.LightningModule):
         # this is the test loop
         out = model(data)
         loss_function = CrossEntropyLoss(weight=class_weights).to(device) #weight=class_weight
-        test_loss = loss_function(out, data.y.squeeze().to(torch.int64))
         
-        ys, preds = [], []
-        test_label = data.y.cpu()
-        ys.append(data.y)
-        preds.append((out.argmax(-1)).float().cpu())
+        if hasattr(data, 'test_mask'):
+            # If 'test_mask' attribute is present in data, use it for masking
+            y_data = data.y[data.test_mask]
+            out_data = out[data.test_mask]
+        else:
+            y_data = data.y
+            out_data = out
+        
+        test_loss = loss_function(out_data, y_data.squeeze().to(torch.int64))
+        test_label = y_data.cpu()
+        ys = [y_data]
+        preds = [(out_data.argmax(-1)).float().cpu()]
+        percentages = torch.softmax(out_data, dim=-1).cpu().numpy() * 100
 
         y, pred = torch.cat(ys, dim=0), torch.cat(preds, dim=0)
-        pred = pred.reshape(-1,1)
+        pred = pred.reshape(-1, 1)
         accuracy = (pred == test_label).sum() / pred.shape[0]
-        
+
         self.log("test_acc", accuracy)
-        return pred, y.squeeze()
-        
+
+        return pred, y.squeeze(), percentages
+    
     def test_epoch_end(self, outputs):
-        #this function gives us in the outputs all acumulated pred and test_labels we returned in test_step
-        #we transform the pred and test_label into a shape that the classification report can read
-        global true_array, pred_array
-        true_array=[outputs[i][1].cpu().numpy() for i in range(len(outputs))]
+        # this function gives us in the outputs all accumulated pred and test_labels we returned in test_step
+        # we transform the pred and test_label into a shape that the classification report can read
+        global true_array, pred_array, percentage_array
+        true_array = [outputs[i][1].cpu().numpy() for i in range(len(outputs))]
         pred_array = [outputs[i][0].cpu().numpy() for i in range(len(outputs))]
+        percentage_array = [outputs[i][2] for i in range(len(outputs))]
         pred_array = np.concatenate(pred_array, axis=0 )
         true_array = np.concatenate(true_array, axis=0 )
+        percentage_array = np.concatenate(percentage_array, axis=0)
         print(confusion_matrix(true_array, pred_array))
         print(classification_report(true_array, pred_array))
-        # print("pred_array ",pred_array)
+
+def last_version(MConfig):
+    
+    versions = os.listdir("DvcLiveLogger/"+ MConfig["name_of_save"] +"/checkpoints")
+    versions.sort()
+    vt=np.array([])
+    for i in range(len(versions)):
+        v=versions[i][11:-5]
+        if v == '':
+            v = 0
+        else:
+            v = int(v)
+        vt=np.append(vt,v)
+
+    version_dict = {version: tag for version, tag in zip(versions, vt)}
+    sorted_versions = sorted(versions, key=lambda x: version_dict[x])
+    return sorted_versions[-1]
         
 def main(Container):
     global class_weights, device, model, Config, MConfig
@@ -373,8 +436,10 @@ def main(Container):
     #lr_finder = FineTuneLearningRateFinder(milestones=(5,10))
     # logger = TensorBoardLogger(save_file, name=name_of_save) # where the model saves the callbacks
     logger = DVCLiveLogger(run_name = MConfig["name_of_save"])
+    # logger = None
 
     torch.manual_seed(MConfig["SEED"])
+    # torch.set_float32_matmul_precision('high')
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     Container.add_device(device)
     output = Container.output
@@ -397,8 +462,32 @@ def main(Container):
             model = NetBCE().double()#.to(device) 
         if Config["main"]["loss"] == "CE":
             model = NetCE().double()#.to(device)           
-    Container.start_model(model)
     #training
     trainer = pl.Trainer(logger=logger, max_epochs = MConfig["range_epoch"], callbacks=[val_checkpoint_best_loss,early_stop],accelerator='gpu',devices=1)#val_checkpoint_best_loss,latest_checkpoint, val_checkpoint_acc,val_checkpoint_loss
     trainer.fit(model, train_loader, val_loader)
-    Container.end_model_model(model)
+    
+    if Config["graph"]["classif"] == "graph":
+        best_model = GINE().load_from_checkpoint("DvcLiveLogger/"+MConfig["name_of_save"]+"/checkpoints/" + last_version(MConfig)).double()
+    elif Config["graph"]["classif"] == "node":
+        if Config["main"]["loss"] == "BCE":
+            best_model = NetBCE().load_from_checkpoint("DvcLiveLogger/"+MConfig["name_of_save"]+"/checkpoints/" + last_version(MConfig)).double()
+        if Config["main"]["loss"] == "CE":
+            best_model = NetCE().load_from_checkpoint("DvcLiveLogger/"+MConfig["name_of_save"]+"/checkpoints/" + last_version(MConfig)).double()
+
+    Container.model(model,best_model)
+    
+    tester = pl.Trainer(accelerator='gpu',devices=1)
+    tester.test(best_model, test_loader)
+    
+    Container.add_true_pred(true_array, pred_array, percentage_array)
+    return Container
+
+def just_test(Container):
+    global class_weights, device, model
+    model = Container.model_last
+    device = Container.device
+    class_weights = Container.class_weights
+    tester = pl.Trainer(accelerator='gpu',devices=1)
+    tester.test(model , Container.test_loader)
+    Container.add_true_pred(true_array, pred_array, percentage_array)
+    return Container

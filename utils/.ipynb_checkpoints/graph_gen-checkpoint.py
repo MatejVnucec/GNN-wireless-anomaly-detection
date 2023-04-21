@@ -115,7 +115,7 @@ def define_mask(X_mask, Y, GConfig):
     elif GConfig["classif"] == "node":# for node classification 
         return torch.unsqueeze(torch.tensor(X_mask, dtype=torch.double),1)
 
-def output_append(GConfig, _X,X_mask=[],Y=[], output=[]):
+def output_append(GConfig, _X,X_mask=[],Y=[], output=[], start=0, stop=100):
     """
     By using get_matrix and define_mask we can define a graph and put it into output
 
@@ -139,6 +139,9 @@ def output_append(GConfig, _X,X_mask=[],Y=[], output=[]):
         edge_index = edge_index.clone().detach().to(torch.int64)
         edge_attr = torch.unsqueeze(torch.tensor(edge_weight, dtype=torch.double),1).clone().detach()
         y = define_mask(X_mask[i], Y[i], GConfig)
-
-        output.append(Data(x=x, edge_index=edge_index, edge_attr=edge_attr, y=y))   
+        if GConfig["custom"] == True:
+            if y[0] != 5 and i >= start-60 and i <= stop+60:
+                output.append(Data(x=x, edge_index=edge_index, edge_attr=edge_attr, y=y))   
+        else:
+            output.append(Data(x=x, edge_index=edge_index, edge_attr=edge_attr, y=y))   
     return output

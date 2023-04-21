@@ -98,6 +98,6 @@ def get_UTime(DRConfig):
     version = os.listdir("datasets/U-Time/" + versions[0])
     version.sort()
     
-    PSG_file = 
-    H_file = pyedflib.EdfReader("datasets/U-Time/" + versions[0] +"/"+ version[1]).readAnnotations()
+    PSG_file = pyedflib.EdfReader("datasets/U-Time/" + versions[0] +"/"+ version[1]).readAnnotations()
+    H_file = pyedflib.EdfReader("datasets/U-Time/" + versions[0] +"/"+ version[0]).readAnnotations()
     

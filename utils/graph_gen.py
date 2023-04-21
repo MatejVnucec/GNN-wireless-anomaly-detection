@@ -115,7 +115,34 @@ def define_mask(X_mask, Y, GConfig):
     elif GConfig["classif"] == "node":# for node classification 
         return torch.unsqueeze(torch.tensor(X_mask, dtype=torch.double),1)
 
-def output_append(GConfig, _X,X_mask=[],Y=[], output=[]):
+    
+def create_mask(train, val, test, max_size):
+    if train + val + test!= 1: 
+        raise ValueError("train, val and test do not add up to 1. Please change the parameters given to create_mask function!")
+    else:
+        SEED = 100
+        random.seed(SEED)
+        print(SEED)
+
+        percentages = [train, val, test] # percentage of each value
+        values123 = [1, 2, 3] # values to use
+        counts = [int(max_size*p) for p in percentages] # count of each value
+        counts[-1] += max_size - sum(counts) # adjust for rounding errors
+
+        lst = []
+        for i, count in enumerate(counts):
+            lst.extend([values123[i]] * count)
+
+        random.shuffle(lst)
+
+        train_mask = np.array([x == 1 for x in lst])
+        val_mask = np.array([x == 2 for x in lst])
+        test_mask = np.array([x == 3 for x in lst])
+
+        return train_mask, val_mask, test_mask
+    
+    
+def output_append(GConfig, _X,X_mask=[],Y=[], output=[], start=0, stop=100):
     """
     By using get_matrix and define_mask we can define a graph and put it into output
 
@@ -139,6 +166,24 @@ def output_append(GConfig, _X,X_mask=[],Y=[], output=[]):
         edge_index = edge_index.clone().detach().to(torch.int64)
         edge_attr = torch.unsqueeze(torch.tensor(edge_weight, dtype=torch.double),1).clone().detach()
         y = define_mask(X_mask[i], Y[i], GConfig)
-
-        output.append(Data(x=x, edge_index=edge_index, edge_attr=edge_attr, y=y))   
+        if GConfig["custom"]:
+            if y[0] != 5 and i >= start-60 and i <= stop+60:
+                output.append(Data(x=x, edge_index=edge_index, edge_attr=edge_attr, y=y))   
+                if GConfig["masking"]:
+                    train_mask, val_mask, test_mask = create_mask(0.75,0.05,0.2,len(large_X))
+                    train_mask = torch.tensor(train_mask, dtype=torch.bool)
+                    val_mask = torch.tensor(val_mask, dtype=torch.bool)
+                    test_mask = torch.tensor(test_mask, dtype=torch.bool)
+                    output.append(Data(x=x, train_mask=train_mask, val_mask=val_mask, test_mask=test_mask, edge_index=edge_index, edge_attr=edge_attr,y=y))
+                else:
+                    output.append(Data(x=x, edge_index=edge_index, edge_attr=edge_attr, y=y))   
+        else:
+            if GConfig["masking"]:
+                train_mask, val_mask, test_mask = create_mask(0.75,0.05,0.2,len(large_X))
+                train_mask = torch.tensor(train_mask, dtype=torch.bool)
+                val_mask = torch.tensor(val_mask, dtype=torch.bool)
+                test_mask = torch.tensor(test_mask, dtype=torch.bool)
+                output.append(Data(x=x, train_mask=train_mask, val_mask=val_mask, test_mask=test_mask, edge_index=edge_index, edge_attr=edge_attr,y=y))
+            else:
+                output.append(Data(x=x, edge_index=edge_index, edge_attr=edge_attr, y=y))  
     return output

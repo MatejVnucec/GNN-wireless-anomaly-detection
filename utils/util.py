@@ -265,7 +265,7 @@ def class_weigth(MConfig,_output):
     for obj in _output:
         all_x = np.append(all_x,obj.y.numpy())
     all_x = np.array(all_x).reshape(-1)
-    
+    # print(np.unique(all_x))
     class_weights = torch.tensor(class_weight.compute_class_weight(class_weight='balanced',
                                                                     classes=np.unique(all_x),
                                                                     y=all_x))

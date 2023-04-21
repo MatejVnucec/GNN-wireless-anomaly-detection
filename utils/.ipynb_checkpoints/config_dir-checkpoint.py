@@ -12,6 +12,8 @@ Config = {
     },
     
     "graph":{
+        "custom" : True,
+        "masking" : False,
         "classif":"node", #"node","graph"
         "type":"VG", #"MTF", "VG", "Dual_VG"
         "MTF":{
@@ -30,11 +32,11 @@ Config = {
     "main":{
         "SEED": 300,
         "learning_rate": 0.0005,
-        "batch_size": 64,
+        "batch_size": 32,
         "range_epoch": 3000, #set length of epoch
         "save_file": " test_test",
-        "name_of_save": "VG_Rutger",
-        "patience": 500,
+        "name_of_save": "test_u-time",
+        "patience": 200,
         "loss": "CE" #"BCE", "CE"
     },
     "train/val/test":{
